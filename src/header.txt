@@ -1,0 +1,12 @@
+<link rel="stylesheet" type="text/css"
+    href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+<style>
+p {
+  font-family: "Computer Modern Sans", sans-serif;
+}
+a:link {
+  color: navy; 
+  background-color: transparent; 
+  text-decoration: none;
+}
+</style>
