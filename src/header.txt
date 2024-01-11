@@ -1,3 +1,4 @@
+<head>
 <link rel="stylesheet" type="text/css"
     href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
 <style>
@@ -10,3 +11,4 @@ a:link {
   text-decoration: none;
 }
 </style>
+</head>

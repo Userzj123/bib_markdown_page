@@ -2,6 +2,7 @@ from pybtex.database.input import bibtex
 import argparse
 import datetime
 from pathlib import Path
+from journal_abbr import find_abb_wiki
 
 CITE_TYPE = ["article",
              "incollection",
@@ -13,35 +14,42 @@ source_dir = source_path.parent
 header = Path(str(source_dir) + '/header.txt').read_text()
 
 def main(args):
+    # Test arguments
+    # args.bib = '/Users/user/Documents/Projects/ERI/ERI.bib'
+    # args.output = '/Users/user/Documents/Projects/ERI/reference.md'
+    
     parser = bibtex.Parser()
     bib_data = parser.parse_file(args.bib)
     with open(args.output, "w+") as f:
-        f.write(header)
-        f.write("\n\n# Reference")
+        # f.write(header)
+        f.write("# Reference")
         f.write('Generated bibliography markdown file. \nData: '+str( datetime.datetime.now()))
         i = 0
-        f.write('\n\n<span style="font-family: sans">\n')
+        
         
         # Unordered List
-        f.write('<ul>')
+        # f.write('<ul>')
         for label in bib_data.entries:
             i =+ 1
             
             # Unordered List Item
-            f.write('<li>')
+            # f.write('<li>')
+            f.write('\n- ')
+            # f.write(' <span style="font-family: sans">')
             
             # anchor
-            f.write('<a id="%s"> \n' % (label))
+            f.write('<a name="%s"></a> ' % (label))
             
             # Author list
             author_list = ''
             comma_i = 0
             middle_string = ', '
-            end_string = '.,'
+            end_string = '., '
             for au in bib_data.entries[label].persons['author']:
-                comma_i =+ 1
-                if comma_i == len(bib_data.entries[label].persons['author']):
-                    middle_string = 'and '
+                comma_i += 1
+                if comma_i == len(bib_data.entries[label].persons['author'])-1:
+                    end_string = '. and '
+                elif comma_i == len(bib_data.entries[label].persons['author']):
                     end_string = '.'
                 author_list += au.last_names[0] + middle_string
                 if len(au.middle_names)!= 0: author_list += (au.middle_names[0].replace(' ', ''))[0].capitalize()+ '. '
@@ -53,13 +61,18 @@ def main(args):
                 ind_uml = author_list.rfind('{\\\"')
                 if ind_acute != -1:
                     replace_term = 'acute'
-                    author_list = author_list[:ind_acute-1] + '&'  + author_list[ind_acute+3] + replace_term + author_list[ind_acute+6:]
+                    # Not recognize by github
+                    # author_list = author_list[:ind_acute-1] + '&'  + author_list[ind_acute+3] + replace_term + author_list[ind_acute+6:]
+                    author_list = author_list[:ind_acute-1] +  author_list[ind_acute+3] + author_list[ind_acute+6:]
                 elif ind_uml != -1:
                     replace_term = 'uml'
-                    author_list = author_list[:ind_uml-1] + '&'  + author_list[ind_uml+3] + replace_term + author_list[ind_uml+6:]
+                    # author_list = author_list[:ind_uml-1] + '&'  + author_list[ind_uml+3] + replace_term + author_list[ind_uml+6:]
+                    author_list = author_list[:ind_uml-1] + author_list[ind_uml+3] + author_list[ind_uml+6:]
                 
                 author_list = author_list.replace('{', '')
                 author_list = author_list.replace('}', '')
+                
+                # print(author_list)
 
             
             f.write('<span style="font-variant: small-caps"> %s </span>' % author_list)
@@ -80,7 +93,10 @@ def main(args):
             if bib_data.entries[label].type == 'incollection':
                 f.write(' <i> %s</i>' % bib_data.entries[label].fields['booktitle'].replace('{', '').replace('}', '').replace('\\', ''))
             elif bib_data.entries[label].type == 'article':
-                f.write(' <i> %s</i>' % bib_data.entries[label].fields['journal'].replace('{', '').replace('}', '').replace('\\', ''))
+                journal_name = bib_data.entries[label].fields['journal'].replace('{', '').replace('}', '').replace('\\', '')
+                try: journal_name = find_abb_wiki(journal_name)
+                except: print(journal_name + " cannot find abbreviation")
+                f.write(' <i> %s</i>' % journal_name)
             elif bib_data.entries[label].type == 'book':
                 f.write(' <i> %s</i>' % bib_data.entries[label].fields['title'].replace('{', '').replace('}', '').replace('\\', ''))
             
@@ -92,16 +108,19 @@ def main(args):
             if 'number' in bib_data.entries[label].fields.keys(): 
                 f.write(' (%s)' % bib_data.entries[label].fields['number'])
             
-            f.write(',')
+
             # Page
             if 'page' in bib_data.entries[label].fields.keys():
-                f.write(' %s' % bib_data.entries[label].fields['pages'])
+                f.write(', %s' % bib_data.entries[label].fields['pages'])
             
-            f.write('</a>')
-            f.write('</li>\n')
             
-        f.write('\n</ul>\n')
-        f.write('</span>\n')
+            # f.write('</li>\n')
+            
+            # f.write('</span>\n')
+            f.write('\n')
+            
+        # f.write('\n</ul>\n')
+
             
         
         
